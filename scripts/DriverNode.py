@@ -82,7 +82,7 @@ if not em7180.begin():
 	print(em7180.getErrorString())
 	exit(1)
 
-while True:
+while not rospy.is_shutdown():
 
 	em7180.checkEventStatus()
 
@@ -225,7 +225,7 @@ while True:
 		if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
 		roll  *= 180.0 / math.pi
 
-        #print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
+        print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
 
 	if em7180.gotAccelerometer():
 
