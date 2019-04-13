@@ -78,7 +78,7 @@ while not rospy.is_shutdown():
 		pitch = -math.asin(2.0 * (qx * qz - qw * qy))
 		yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
 
-
+		# change from radian to degrees
 		pitch *= 180.0 / math.pi
 		yaw   *= 180.0 / math.pi
 
@@ -125,6 +125,11 @@ while not rospy.is_shutdown():
 
 	# Set IMU variable
 	imuMsg = Imu()
+
+	# change from degrees to radians
+	roll *= math.pi / 180.0
+	pitch *= math.pi / 180.0
+	yaw *= math.pi / 180.0
 
 	q = quaternion_from_euler(roll,pitch,yaw)
 	imuMsg.orientation.x = q[0]
