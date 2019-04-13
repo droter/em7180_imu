@@ -34,7 +34,10 @@ rospy.init_node('em7180', anonymous=False)
 
 # Publisher
 imuSensorPublisher=rospy.Publisher('sensors/imus/em7180',Ximu,queue_size=10)
-magneticFieldPublisher=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
+mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
+temp_pub=rospy.Publisher('sensors/temp', Temperature ,queue_size=10)
+pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
+alt_pub=rospy.Publisher('sensors/alt', Float64 ,queue_size=10)
 imu_pub=rospy.Publisher('imu', Imu , queue_size=10)
 
 MAG_RATE       = 100  # Hz
@@ -105,23 +108,47 @@ if em7180.gotMagnetometer():
 	mx,my,mz = em7180.readMagnetometer()
 
 while not rospy.is_shutdown():
+
+	rate=rospy.Rate(10)
+
+
+	# Set Temperature variables
+	tempMsg = Temperature()
+	tempMsg.header.stamp = rospy.Time.now()
+	tempMsg.temperature = temperature
+	tempMsg.variance = 0
+	
+	# Set Pressure variables
+	pressMsg = FluidPressure()
+	pressMsg.header.stamp = rospy.Time.now()
+	pressMsg.fluid_pressure = pressure
+	pressMsg.variance = 0
+	
+	# Set Altitude variables
+	altMsg = altitude
+
 	# Magnetic field vector
 	magneticVector = MagneticField()
-	
 	magneticVector.header.stamp=rospy.Time.now()
 	magneticVector.header.frame_id="magnetometer_link"
-
 	magneticVector.magnetic_field.x=mx
 	magneticVector.magnetic_field.y=my
 	magneticVector.magnetic_field.z=mz
+	magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4] 
 
-	magneticVector.magnetic_field_covariance=[700,0,0,0,700,0,0,0,700] 
-		
+
+	# Publish Data	
 	# imuSensorPublisher.publish(theXimu)
-	magneticFieldPublisher.publish(magneticVector)
+
+	temp_pub.publish(tempMsg)
+	pressure_pub.publish(pressMsg)
+	alt_pub.publish(altMsg)
+	mag_pub.publish(magneticVector)
 
 	# Info to ros_console and screen
-	rospy.loginfo("Publishing sensor data from IMU")
+	#rospy.loginfo("Publishing sensor data from IMU")
+
+	rate.sleep()
 	
 
 
