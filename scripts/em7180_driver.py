@@ -34,7 +34,6 @@ from em7180_imu.msg import Ximu
 rospy.init_node('em7180', anonymous=False)
 
 # Publisher
-imuSensorPublisher=rospy.Publisher('sensors/imus/em7180',Ximu,queue_size=10)
 mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
 temp_pub=rospy.Publisher('sensors/temp', Temperature ,queue_size=10)
 pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
@@ -50,6 +49,8 @@ ACCEL_RATE     = 200  # Hz
 GYRO_RATE      = 200  # Hz
 BARO_RATE      = 50   # Hz
 Q_RATE_DIVISOR = 3    # 1/3 gyro rate
+
+seq = 0
 
 em7180 = EM7180_Master(MAG_RATE, ACCEL_RATE, GYRO_RATE, BARO_RATE, Q_RATE_DIVISOR)
 
@@ -116,7 +117,7 @@ while not rospy.is_shutdown():
 	pitch *= 180.0 / math.pi
 	yaw   *= 180.0 / math.pi
 
-	# get declination and yaw calibration offset
+	# get declination and yaw calibration offset in degrees
 	# These are set in paramater server
 	yaw   += declination # Lookup: https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#declination
 	yaw   += imu_yaw_calibration
@@ -156,6 +157,10 @@ while not rospy.is_shutdown():
 	0 , 0 , 0.04
 	]
 
+	imuMsg.header.stamp= rospy.Time.now()
+	imuMsg.header.frame_id = 'base_imu_link'
+	imuMsg.header.seq = seq
+	seq = seq + 1
 
 	# Set Temperature variables
 	tempMsg = Temperature()
