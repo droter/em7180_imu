@@ -203,8 +203,8 @@ while not rospy.is_shutdown():
 		imuSensorPublisher.publish(theXimu)
 		magneticFieldPublisher.publish(magneticVector)
 			
-			# Info to ros_console and screen
-		rospy.loginfo("Publishing sensor data from IMU")
+		# Info to ros_console and screen
+		#rospy.loginfo("Publishing sensor data from IMU")
 		
 			# Sleep in order to maintain the rate
 		rate.sleep()
