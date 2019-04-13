@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>em7180</name>
+  <name>em7180_imu</name>
   <version>0.1.0</version>
   <description>The em7180 package</description>
 

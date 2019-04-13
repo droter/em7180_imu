@@ -1,0 +1,10 @@
+<launch>
+<!-- 
+You can run the display node on your local pc.
+You may need to install smbus
+sudo apt install python-smbus
+TODO: Need to remove dependency from __init__ on smbus
+-->
+	<node pkg="em7180_imu" type="subscriberEM7180.py" name="Display_Node" />
+    
+</launch>

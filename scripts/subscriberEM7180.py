@@ -45,7 +45,7 @@ import time
 from datetime import datetime
 from std_msgs.msg import String
 from std_msgs.msg import Float64
-from em7180.msg import Ximu
+from em7180_imu.msg import Ximu
 from Tkinter import *
 
 # GUI stuff

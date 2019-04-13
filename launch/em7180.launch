@@ -1,4 +1,4 @@
 <launch>
-	<node pkg="em7180" type="magnetic_vector_publisher.py" name="magnetic_vector" />
-	<node pkg="em7180" type="magnetic_vector_visualizer.py" name="magnetic_vector_visualizer" />
+	<node pkg="em7180_imu" type="magnetic_vector_publisher.py" name="magnetic_vector" />
+	<node pkg="em7180_imu" type="magnetic_vector_visualizer.py" name="magnetic_vector_visualizer" />
 </launch>

@@ -34,7 +34,7 @@ import rospy
 # Ros messages
 ##from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
-from em7180.msg import Ximu
+from em7180_imu.msg import Ximu
 #from geometry_msgs.msg import Vector3
 
 #This gives the following output
