@@ -78,7 +78,19 @@ while not rospy.is_shutdown():
 		pitch = -math.asin(2.0 * (qx * qz - qw * qy))
 		yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
 
-		#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
+
+		pitch *= 180.0 / math.pi
+		yaw   *= 180.0 / math.pi
+
+		# get declination and yaw calibration offset in degrees
+		# These are set in paramater server
+		yaw   += declination # Lookup: https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#declination
+		yaw   += imu_yaw_calibration
+		if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
+
+		roll  *= 180.0 / math.pi
+
+		print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
 
 	if em7180.gotAccelerometer():
 
@@ -113,17 +125,6 @@ while not rospy.is_shutdown():
 
 	# Set IMU variable
 	imuMsg = Imu()
-
-	pitch *= 180.0 / math.pi
-	yaw   *= 180.0 / math.pi
-
-	# get declination and yaw calibration offset in degrees
-	# These are set in paramater server
-	yaw   += declination # Lookup: https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#declination
-	yaw   += imu_yaw_calibration
-	if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
-
-	roll  *= 180.0 / math.pi
 
 	q = quaternion_from_euler(roll,pitch,yaw)
 	imuMsg.orientation.x = q[0]
