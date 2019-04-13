@@ -25,6 +25,7 @@ from em7180 import EM7180_Master
 import rospy
 import math
 import time
+from tf.transformations import quaternion_from_euler
 from sensor_msgs.msg import MagneticField, Imu, Temperature, FluidPressure
 from std_msgs.msg import Float64
 from em7180_imu.msg import Ximu
@@ -40,6 +41,10 @@ pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
 alt_pub=rospy.Publisher('sensors/alt', Float64 ,queue_size=10)
 imu_pub=rospy.Publisher('imu', Imu , queue_size=10)
 
+imu_yaw_calibration = rospy.get_param('~imu_yaw_calibration', 0.0)
+declination = rospy.get_param('~declination', 0.0)
+
+
 MAG_RATE       = 100  # Hz
 ACCEL_RATE     = 200  # Hz
 GYRO_RATE      = 200  # Hz
@@ -53,7 +58,6 @@ if not em7180.begin():
 	print(em7180.getErrorString())
 	exit(1)
 
-
 em7180.checkEventStatus()
 
 if em7180.gotError():
@@ -61,55 +65,96 @@ if em7180.gotError():
 	exit(1)
 
 
-if (em7180.gotQuaternion()):
-
-	qw, qx, qy, qz = em7180.readQuaternion()
-
-	roll  = math.atan2(2.0 * (qw * qx + qy * qz), qw * qw - qx * qx - qy * qy + qz * qz)
-	pitch = -math.asin(2.0 * (qx * qz - qw * qy))
-	yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
-
-	pitch *= 180.0 / math.pi
-	yaw   *= 180.0 / math.pi 
-	yaw   += 13.8 # Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
-	if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
-	roll  *= 180.0 / math.pi
-
-	#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
-
-if em7180.gotAccelerometer():
-
-	ax,ay,az = em7180.readAccelerometer()
-	
-	#print('Accel: %+3.3f %+3.3f %+3.3f' % (ax,ay,az))
-
-if em7180.gotGyrometer():
-
-	gx,gy,gz = em7180.readGyrometer()
-
-	#print('Gyro: %+3.3f %+3.3f %+3.3f' % (gx,gy,gz))
-
-	#  Or define output variable according to the Android system, where
-	#  heading (0 to 360) is defined by the angle between the y-axis and True
-	#  North, pitch is rotation about the x-axis (-180 to +180), and roll is
-	#  rotation about the y-axis (-90 to +90) In this systen, the z-axis is
-	#  pointing away from Earth, the +y-axis is at the 'top' of the device
-	#  (cellphone) and the +x-axis points toward the right of the device.
-
-if em7180.gotBarometer():
-
-	pressure, temperature = em7180.readBarometer()
-
-	altitude = (1.0 - math.pow(pressure / 1013.25, 0.190295)) * 44330
-	#print('  Altitude = %2.2f m\n' % altitude) 
-
-if em7180.gotMagnetometer():
-
-	mx,my,mz = em7180.readMagnetometer()
-
 while not rospy.is_shutdown():
 
-	rate=rospy.Rate(10)
+	rate=rospy.Rate(50)
+
+	if (em7180.gotQuaternion()):
+
+		qw, qx, qy, qz = em7180.readQuaternion()
+
+		roll  = math.atan2(2.0 * (qw * qx + qy * qz), qw * qw - qx * qx - qy * qy + qz * qz)
+		pitch = -math.asin(2.0 * (qx * qz - qw * qy))
+		yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
+
+		#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
+
+	if em7180.gotAccelerometer():
+
+		ax,ay,az = em7180.readAccelerometer()
+		
+		#print('Accel: %+3.3f %+3.3f %+3.3f' % (ax,ay,az))
+
+	if em7180.gotGyrometer():
+
+		gx,gy,gz = em7180.readGyrometer()
+
+		#print('Gyro: %+3.3f %+3.3f %+3.3f' % (gx,gy,gz))
+
+		#  Or define output variable according to the Android system, where
+		#  heading (0 to 360) is defined by the angle between the y-axis and True
+		#  North, pitch is rotation about the x-axis (-180 to +180), and roll is
+		#  rotation about the y-axis (-90 to +90) In this systen, the z-axis is
+		#  pointing away from Earth, the +y-axis is at the 'top' of the device
+		#  (cellphone) and the +x-axis points toward the right of the device.
+
+	if em7180.gotBarometer():
+
+		pressure, temperature = em7180.readBarometer()
+
+		altitude = (1.0 - math.pow(pressure / 1013.25, 0.190295)) * 44330
+		#print('  Altitude = %2.2f m\n' % altitude) 
+
+	if em7180.gotMagnetometer():
+
+		mx,my,mz = em7180.readMagnetometer()	
+
+
+	# Set IMU variable
+	imuMsg = Imu()
+
+	pitch *= 180.0 / math.pi
+	yaw   *= 180.0 / math.pi
+
+	# get declination and yaw calibration offset
+	# These are set in paramater server
+	yaw   += declination # Lookup: https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#declination
+	yaw   += imu_yaw_calibration
+	if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
+
+	roll  *= 180.0 / math.pi
+
+	q = quaternion_from_euler(roll,pitch,yaw)
+	imuMsg.orientation.x = q[0]
+	imuMsg.orientation.y = q[1]
+	imuMsg.orientation.z = q[2]
+	imuMsg.orientation.w = q[3]
+
+	imuMsg.orientation_covariance = [
+	0.0025 , 0 , 0,
+	0, 0.0025, 0,
+	0, 0, 0.0025
+	]
+
+	imuMsg.angular_velocity.x=gx
+	imuMsg.angular_velocity.y=gy
+	imuMsg.angular_velocity.z=gz
+
+	imuMsg.angular_velocity_covariance = [
+	0.02, 0 , 0,
+	0 , 0.02, 0,
+	0 , 0 , 0.02
+	]
+
+	imuMsg.linear_acceleration.x=ax
+	imuMsg.linear_acceleration.y=ay
+	imuMsg.linear_acceleration.z=az
+
+	imuMsg.linear_acceleration_covariance = [
+	0.04 , 0 , 0,
+	0 , 0.04, 0,
+	0 , 0 , 0.04
+	]
 
 
 	# Set Temperature variables
@@ -139,7 +184,7 @@ while not rospy.is_shutdown():
 
 	# Publish Data	
 	# imuSensorPublisher.publish(theXimu)
-
+	imu_pub.publish(imuMsg)
 	temp_pub.publish(tempMsg)
 	pressure_pub.publish(pressMsg)
 	alt_pub.publish(altMsg)
