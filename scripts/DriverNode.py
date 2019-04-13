@@ -33,7 +33,7 @@ import rospy
 
 # Ros messages
 ##from sensor_msgs.msg import Imu
-from sensor_msgs.msg import MagneticField, IMU
+from sensor_msgs.msg import MagneticField
 from em7180_imu.msg import Ximu
 #from geometry_msgs.msg import Vector3
 
@@ -114,7 +114,6 @@ while True:
 		# Publisher
 		imuSensorPublisher=rospy.Publisher('sensors/imus/em7180',Ximu,queue_size=10)
 		magneticFieldPublisher=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
-		imu_pub=rospy.Publisher('imu', IMU, queue_size=10)
 	
 		rate=rospy.Rate(10)
 
