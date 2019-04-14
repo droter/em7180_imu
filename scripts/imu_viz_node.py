@@ -33,11 +33,7 @@
 #
 # Revision $Id$
 
-## subscriberEM7180.py displays the data received by subscribing to the 
-## topic /SensorData published by EM7180Publisher. The code is meant to 
-## serve as an example on how to fetch data from the topic. It's also useful 
-## for debugging purposes as it displays the data and visualizes the position 
-## in 3D space.
+## imu_viz_node.py subscribes to ROS topics with IMU data and displays
 
 import rospy
 import math
@@ -45,7 +41,8 @@ import time
 from datetime import datetime
 from std_msgs.msg import String
 from std_msgs.msg import Float64
-from em7180_imu.msg import Ximu
+from tf.transformations import euler_from_quaternion
+from sensor_msgs.msg import MagneticField, Imu, Temperature, FluidPressure
 from Tkinter import *
 
 # GUI stuff
@@ -68,41 +65,61 @@ galtitude = StringVar(root) # Altitude in meters
 
 
 # Parse the data from the subscriber
-def callback(data):
-	gtemp.set('%2.2f C' % data.temperature.temperature)
-	gpressure.set('%2.2f mbar' % data.pressure.fluid_pressure)
-	galtitude.set('%2.2f m' % data.altitude)
+def imu_callback(data):
+	quat = (data.orientation.x,
+			data.orientation.y,
+			data.orientation.z,
+			data.orientation.w)
+
+	euler = euler_from_quaternion(quat)
+
+	roll = euler[0]
+	pitch = euler[1]
+	yaw = euler[2]
+
+	# change from radian to degrees
+	roll *= 180.0 / math.pi
+	pitch  *= 180.0 / math.pi
+	yaw   *= 180.0 / math.pi
+	if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
+
+	print(roll, pitch, yaw)
+
+	groll.set('%2.2f' % roll)
+	gpitch.set('%2.2f' % pitch)
+	gyaw.set('%2.2f' % yaw)
 	
-	groll.set('%2.2f' % data.imu.orientation.x)
-	gpitch.set('%2.2f' % data.imu.orientation.y)
-	gyaw.set('%2.2f' % data.imu.orientation.z)
+	gax.set('%2.2f x' % data.linear_acceleration.x)
+	gay.set('%2.2f y' % data.linear_acceleration.y)
+	gaz.set('%2.2f z' % data.linear_acceleration.z)
 	
-	gax.set('%2.2f x' % data.imu.linear_acceleration.x)
-	gay.set('%2.2f y' % data.imu.linear_acceleration.y)
-	gaz.set('%2.2f z' % data.imu.linear_acceleration.z)
-	
-	ggx.set('%2.2f x' % data.imu.angular_velocity.x)
-	ggy.set('%2.2f y' % data.imu.angular_velocity.y)
-	ggz.set('%2.2f z' % data.imu.angular_velocity.z)
+	ggx.set('%2.2f x' % data.angular_velocity.x)
+	ggy.set('%2.2f y' % data.angular_velocity.y)
+	ggz.set('%2.2f z' % data.angular_velocity.z)
 
-	doDraw()
+	#doDraw()
 
+def temp_callback(data):
+	gtemp.set('%2.2f C' % data.temperature)
 
 
-def subscriberEM7180():
+def press_callback(data):
+	gpressure.set('%2.2f mbar' % data.fluid_pressure)
 
-	# In ROS, nodes are uniquely named. If two nodes with the same
-	# name are launched, the previous one is kicked off. The
-	# anonymous=True flag means that rospy will choose a unique
-	# name for our 'listener' node so that multiple listeners can
-	# run simultaneously.
-	rospy.init_node('subscriberEM7180', anonymous=False)
 
-	#rospy.Subscriber('chatter', String, callback)
-	rospy.Subscriber('sensors/imus/em7180', Ximu, callback)
+def alt_callback(data):	
+	galtitude.set('%2.2f m' % data.data)
 
-	# spin() simply keeps python from exiting until this node is stopped
-	#rospy.spin()
+
+def imu_viz():
+
+	rospy.init_node('imu_viz', anonymous=True)
+
+	rospy.Subscriber('imu', Imu, imu_callback)
+	rospy.Subscriber('sensors/temp', Temperature, temp_callback)
+	rospy.Subscriber('sensors/pressure', FluidPressure, press_callback)
+	rospy.Subscriber('sensors/alt', Float64, alt_callback)
+
 
 # GUI stuff
 root.title("ROS EM7180")
@@ -199,6 +216,13 @@ label_alt.config(font=("Courier", 22))
 cubeCanvas = Canvas(root, width=300, height=300)
 cubeCanvas.grid(row=11, columnspan=2)
 
+	# TODO: Change box to tractor
+	# load the .gif image file
+	#gif1 = PhotoImage(file='tractor.gif')
+
+	# put gif image on canvas
+	# pic's uper left corner (NW) on the canvas is at x=50 y=10
+	#cubeCanvas.create_image(50, 10, image=gif1, anchor=NW)
 
 def rotY(x, y, z, angle):
 	#Rotates the point around the X axis by the given angle in degrees
@@ -255,7 +279,7 @@ def doDraw():
 	# The cube itself
 	#c = cube. Fr,Le,Ri,Ba = Front-,Left-,Right-,Back- plane. L,R = Left-,Right- side of plane. t,b = top,bottom.
 	#front=red. left=green. right=blue. back=yellow
-	
+
 	cFrLt = getPoint(-1, 1, -1)
 	cFrRt = getPoint(1, 1, -1)
 	cFrLb = getPoint(-1, -1, -1)
@@ -288,7 +312,7 @@ def doDraw():
 
 	
 if __name__ == '__main__':
-	subscriberEM7180()
+	imu_viz()
 
 		
 

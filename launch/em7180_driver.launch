@@ -8,8 +8,8 @@ SDA and SCL should have external pull-up resistors (to 3.3V). (4.7 k)
 Hardware setup:
 EM7180 __________ RPi 3
 3V3 _____________ 1 (3.3V)
-SDA _____________ 2 (SDA)
-SCL _____________ 3 (SCL)
+SDA _____________ 3 (SDA)
+SCL _____________ 5 (SCL)
 GND _____________ 9 GND
 INT _____________ ???
 

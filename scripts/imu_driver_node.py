@@ -28,10 +28,9 @@ import time
 from tf.transformations import quaternion_from_euler
 from sensor_msgs.msg import MagneticField, Imu, Temperature, FluidPressure
 from std_msgs.msg import Float64
-from em7180_imu.msg import Ximu
 
 # Initialize node
-rospy.init_node('em7180', anonymous=False)
+rospy.init_node('EM7180_imu_driver', anonymous=False)
 
 # Publisher
 mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
@@ -90,7 +89,8 @@ while not rospy.is_shutdown():
 
 		roll  *= 180.0 / math.pi
 
-		print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
+		#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
+		
 
 	if em7180.gotAccelerometer():
 
@@ -194,7 +194,6 @@ while not rospy.is_shutdown():
 
 
 	# Publish Data	
-	# imuSensorPublisher.publish(theXimu)
 	imu_pub.publish(imuMsg)
 	temp_pub.publish(tempMsg)
 	pressure_pub.publish(pressMsg)
