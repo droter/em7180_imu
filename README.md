@@ -53,11 +53,16 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
 Published Topics:
 
-    imu  (sensor_msgs/Imu)
+    imu/data  (sensor_msgs/Imu)
+    imu/data_raw  (sensor_msgs/Imu) No orientation 
     imu/mag  (sensor_msgs/MagneticField)
     sensor/temp  (sensor_msgs/Temperature)
     sensor/pressure  (sensor_msgs/FluidPressure)
     sensor/alt  (sensor_msgs/Float64)
+
+### Angles
+    The ROS standard for IMU data http://www.ros.org/reps/rep-0145.html
+    The ROS standard for Coordinate Conventions http://www.ros.org/reps/rep-0103.html
 
 ### Mounting the imu on your robot
 

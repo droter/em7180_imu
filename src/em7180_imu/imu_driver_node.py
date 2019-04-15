@@ -61,7 +61,8 @@ mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
 temp_pub=rospy.Publisher('sensors/temp', Temperature ,queue_size=10)
 pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
 alt_pub=rospy.Publisher('sensors/alt', Float64 ,queue_size=10)
-imu_pub=rospy.Publisher('imu', Imu , queue_size=10)
+imu_pub=rospy.Publisher('imu/data', Imu , queue_size=10)
+imu_raw_pub=rospy.Publisher('imu/data_raw', Imu , queue_size=10)
 
 imu_yaw_calibration = rospy.get_param('~imu_yaw_calibration', 0.0)
 declination = rospy.get_param('~declination', 0.0)
@@ -165,19 +166,60 @@ while not rospy.is_shutdown():
 	]
 
 	imuMsg.header.stamp= rospy.Time.now()
-	imuMsg.header.frame_id = 'base_imu_link'
+	imuMsg.header.frame_id = 'imu_link'
 	imuMsg.header.seq = seq
 	seq = seq + 1
+
+
+	# IMU raw no orintation
+	imuRawMsg = Imu()
+
+	q = quaternion_from_euler(roll,pitch,yaw)
+	imuMsg.orientation.x = 0
+	imuMsg.orientation.y = 0
+	imuMsg.orientation.z = 0
+	imuMsg.orientation.w = 0
+
+	imuMsg.orientation_covariance = [
+	0, 0, 0,
+	0, 0, 0,
+	0, 0, 0
+	]
+
+	imuMsg.angular_velocity.x=gx
+	imuMsg.angular_velocity.y=gy
+	imuMsg.angular_velocity.z=gz
+
+	imuMsg.angular_velocity_covariance = [
+	0.02, 0 , 0,
+	0 , 0.02, 0,
+	0 , 0 , 0.02
+	]
+
+	imuMsg.linear_acceleration.x=ax
+	imuMsg.linear_acceleration.y=ay
+	imuMsg.linear_acceleration.z=az
+
+	imuMsg.linear_acceleration_covariance = [
+	0.04 , 0 , 0,
+	0 , 0.04, 0,
+	0 , 0 , 0.04
+	]
+
+	imuMsg.header.stamp= rospy.Time.now()
+	imuMsg.header.frame_id = 'imu_link'
 
 	# Set Temperature variables
 	tempMsg = Temperature()
 	tempMsg.header.stamp = rospy.Time.now()
+	tempMsg.header.frame_id="imu_link"
 	tempMsg.temperature = temperature
 	tempMsg.variance = 0
 	
 	# Set Pressure variables
 	pressMsg = FluidPressure()
 	pressMsg.header.stamp = rospy.Time.now()
+	magneticVector.header.frame_id="imu_link"
 	pressMsg.fluid_pressure = pressure
 	pressMsg.variance = 0
 	
@@ -187,7 +229,7 @@ while not rospy.is_shutdown():
 	# Magnetic field vector
 	magneticVector = MagneticField()
 	magneticVector.header.stamp=rospy.Time.now()
-	magneticVector.header.frame_id="magnetometer_link"
+	magneticVector.header.frame_id="imu_link"
 	magneticVector.magnetic_field.x=mx
 	magneticVector.magnetic_field.y=my
 	magneticVector.magnetic_field.z=mz
@@ -196,6 +238,7 @@ while not rospy.is_shutdown():
 
 	# Publish Data	
 	imu_pub.publish(imuMsg)
+	imu_raw_pub.publish(imuRawMsg)
 	temp_pub.publish(tempMsg)
 	pressure_pub.publish(pressMsg)
 	alt_pub.publish(altMsg)

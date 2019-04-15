@@ -218,7 +218,7 @@ label_altT.grid(row=10, sticky=E)
 label_altT.config(font=("Courier", 22))
 
 label_alt = Label(root,  textvariable=galtitude)
-label_alt.grid(row=10, sticky=E)
+label_alt.grid(row=10, column=1)
 label_alt.config(font=("Courier", 22))
 
 # TODO: Spacing for box labels
@@ -239,7 +239,7 @@ label_alt.config(font=("Courier", 22))
 
 #Define Canvas for displaying 3D cube to visualize positioning in 3D space
 cubeCanvas = Canvas(root, width=300, height=300)
-cubeCanvas.grid(row=12, columnspan=2)
+cubeCanvas.grid(row=11, columnspan=2)
 
 	# TODO: Change box to tractor
 	# load the .gif image file
