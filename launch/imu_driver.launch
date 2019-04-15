@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+<!-- 
+Connect the em7180 to your Raspberry Pi
+
+For the RPi
+SDA and SCL should have external pull-up resistors (to 3.3V). (4.7 k)
+
+Hardware setup:
+EM7180 __________ RPi 3
+3V3 _____________ 1 (3.3V)
+SDA _____________ 3 (SDA)
+SCL _____________ 5 (SCL)
+GND _____________ 9 GND
+INT _____________ ???
+
+-->
+
+
+	<node pkg="em7180_imu" type="imu_driver_node.py" name="imu_driver" output="screen" respawn="true">
+		<!-- Find youor declination - http://www.magnetic-declination.com -->
+		<param name="declination" value="0.0" />
+		<param name="imu_yaw_calibration" value="0.0" />
+	</node>
+    
+</launch>
+

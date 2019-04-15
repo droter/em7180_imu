@@ -62,6 +62,8 @@ ggy = StringVar(root) # Gyro in Y-axis
 ggz = StringVar(root) # Gyro in Z-axis
 gpressure = StringVar(root) # Pressure in mbar
 galtitude = StringVar(root) # Altitude in meters
+refresh_rate = .1 # viz refresh rate
+g_last_draw = 0.0
 
 
 # Parse the data from the subscriber
@@ -83,8 +85,6 @@ def imu_callback(data):
 	yaw   *= 180.0 / math.pi
 	if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
 
-	print(roll, pitch, yaw)
-
 	groll.set('%2.2f' % roll)
 	gpitch.set('%2.2f' % pitch)
 	gyaw.set('%2.2f' % yaw)
@@ -97,7 +97,7 @@ def imu_callback(data):
 	ggy.set('%2.2f y' % data.angular_velocity.y)
 	ggz.set('%2.2f z' % data.angular_velocity.z)
 
-	#doDraw()
+	redraw_viz()
 
 def temp_callback(data):
 	gtemp.set('%2.2f C' % data.temperature)
@@ -110,8 +110,14 @@ def press_callback(data):
 def alt_callback(data):	
 	galtitude.set('%2.2f m' % data.data)
 
+def redraw_viz():
+	global g_last_draw
+	if (rospy.Time.now().to_sec() > (refresh_rate + g_last_draw)):
+		g_last_draw = rospy.Time.now().to_sec()
+		# redraw imu box
+		doDraw() 
 
-def imu_viz():
+def imu():
 
 	rospy.init_node('imu_viz', anonymous=True)
 
@@ -310,11 +316,9 @@ def doDraw():
 
 	cubeBack = cubeCanvas.create_polygon([cBaLt[0],cBaLt[1],cBaRt[0],cBaRt[1],cBaRb[0],cBaRb[1],cBaLb[0],cBaLb[1]], fill='', width=5, outline='yellow')#
 
-	
-if __name__ == '__main__':
-	imu_viz()
 
-		
+if __name__ == '__main__':
+    imu()
 
 root.mainloop()
 

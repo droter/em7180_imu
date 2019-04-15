@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+from em7180_imu import imu_driver_node
+
+if __name__ == '__main__':
+    imu_driver_node.main()
