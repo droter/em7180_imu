@@ -4,7 +4,11 @@ A simple python package to use em7180 IMU in ROS. Tested on Raspberry Pi 3B with
 
 https://www.tindie.com/products/onehorse/ultimate-sensor-fusion-solution-lsm6dsm-lis2md/
 
-## Wiring
+### Calibration
+
+https://github.com/gregtomasch/EM7180_SENtral_Calibration
+
+### Wiring
 
     Connect the em7180 to your Raspberry Pi
 
@@ -19,14 +23,14 @@ https://www.tindie.com/products/onehorse/ultimate-sensor-fusion-solution-lsm6dsm
         INT _____________ ???
 
 
-## Installation
+### Installation
 
     cd ~/catkin_ws/src
     git clone -b master https://github.com/droter/em7180_imu/
     cd ~/catkin_ws
     catkin build
 
-## Usage
+### Usage
 
     Python SMbus requires root access. It may therefore be required to run it as root:
 
@@ -43,13 +47,9 @@ https://www.tindie.com/products/onehorse/ultimate-sensor-fusion-solution-lsm6dsm
     To run the visualization:
 
         rosrun em7180_imu imu_viz_node.py
-
-## Calibration
-
-https://github.com/kriswiner/EM7180_SENtral_sensor_hub/wiki/F.--Magnetometer-and-Accelerometer-Calibration
     
 
-## Documentation
+### Documentation
 
 Published Topics:
 
@@ -59,11 +59,11 @@ Published Topics:
     sensor/pressure  (sensor_msgs/FluidPressure)
     sensor/alt  (sensor_msgs/Float64)
 
-## Mounting the imu on your robot
+### Mounting the imu on your robot
 
 
 
-## Credits
+### Credits
     The package uses some python scripts provided by simondlevy's [repository](https://github.com/simondlevy/EM7180)
     The package uses some python scripts provided by vortexntnu's [repository](https://github.com/vortexntnu/em7180)
 

@@ -83,7 +83,7 @@ while not rospy.is_shutdown():
 
 		# get declination and yaw calibration offset in degrees
 		# These are set in paramater server
-		yaw   += declination # Lookup: https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#declination
+		yaw   += declination # Lookup: http://www.magnetic-declination.com/
 		yaw   += imu_yaw_calibration
 		if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
 
