@@ -21,7 +21,7 @@
 	along with EM7180.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from EM7180.em7180_utils import EM7180_Master
+from em7180.em7180_utils import EM7180_Master
 import rospy
 import math
 import time
@@ -52,159 +52,159 @@ if em7180.gotError():
 	exit(1)
 
 
-def main():
-	# Initialize node
-	rospy.init_node('EM7180_imu_driver', anonymous=False)
 
-	# Publisher
-	mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
-	temp_pub=rospy.Publisher('sensors/temp', Temperature ,queue_size=10)
-	pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
-	alt_pub=rospy.Publisher('sensors/alt', Float64 ,queue_size=10)
-	imu_pub=rospy.Publisher('imu', Imu , queue_size=10)
+# Initialize node
+rospy.init_node('EM7180_imu_driver', anonymous=False)
 
-	imu_yaw_calibration = rospy.get_param('~imu_yaw_calibration', 0.0)
-	declination = rospy.get_param('~declination', 0.0)
+# Publisher
+mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
+temp_pub=rospy.Publisher('sensors/temp', Temperature ,queue_size=10)
+pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
+alt_pub=rospy.Publisher('sensors/alt', Float64 ,queue_size=10)
+imu_pub=rospy.Publisher('imu', Imu , queue_size=10)
 
-	while not rospy.is_shutdown():
+imu_yaw_calibration = rospy.get_param('~imu_yaw_calibration', 0.0)
+declination = rospy.get_param('~declination', 0.0)
 
-		rate=rospy.Rate(50)
+while not rospy.is_shutdown():
 
-		if (em7180.gotQuaternion()):
+	rate=rospy.Rate(50)
 
-			qw, qx, qy, qz = em7180.readQuaternion()
+	if (em7180.gotQuaternion()):
 
-			roll  = math.atan2(2.0 * (qw * qx + qy * qz), qw * qw - qx * qx - qy * qy + qz * qz)
-			pitch = -math.asin(2.0 * (qx * qz - qw * qy))
-			yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
+		qw, qx, qy, qz = em7180.readQuaternion()
 
-			# change from radian to degrees
-			pitch *= 180.0 / math.pi
-			yaw   *= 180.0 / math.pi
+		roll  = math.atan2(2.0 * (qw * qx + qy * qz), qw * qw - qx * qx - qy * qy + qz * qz)
+		pitch = -math.asin(2.0 * (qx * qz - qw * qy))
+		yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
 
-			# get declination and yaw calibration offset in degrees
-			# These are set in paramater server
-			yaw   += declination # Lookup: http://www.magnetic-declination.com/
-			yaw   += imu_yaw_calibration
-			if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
+		# change from radian to degrees
+		pitch *= 180.0 / math.pi
+		yaw   *= 180.0 / math.pi
 
-			roll  *= 180.0 / math.pi
+		# get declination and yaw calibration offset in degrees
+		# These are set in paramater server
+		yaw   += declination # Lookup: http://www.magnetic-declination.com/
+		yaw   += imu_yaw_calibration
+		if yaw < 0: yaw   += 360.0  # Ensure yaw stays between 0 and 360
 
-			#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
-			
+		roll  *= 180.0 / math.pi
 
-		if em7180.gotAccelerometer():
-
-			ax,ay,az = em7180.readAccelerometer()
-			
-			#print('Accel: %+3.3f %+3.3f %+3.3f' % (ax,ay,az))
-
-		if em7180.gotGyrometer():
-
-			gx,gy,gz = em7180.readGyrometer()
-
-			#print('Gyro: %+3.3f %+3.3f %+3.3f' % (gx,gy,gz))
-
-			#  Or define output variable according to the Android system, where
-			#  heading (0 to 360) is defined by the angle between the y-axis and True
-			#  North, pitch is rotation about the x-axis (-180 to +180), and roll is
-			#  rotation about the y-axis (-90 to +90) In this systen, the z-axis is
-			#  pointing away from Earth, the +y-axis is at the 'top' of the device
-			#  (cellphone) and the +x-axis points toward the right of the device.
-
-		if em7180.gotBarometer():
-
-			pressure, temperature = em7180.readBarometer()
-
-			altitude = (1.0 - math.pow(pressure / 1013.25, 0.190295)) * 44330
-			#print('  Altitude = %2.2f m\n' % altitude) 
-
-		if em7180.gotMagnetometer():
-
-			mx,my,mz = em7180.readMagnetometer()	
-
-
-		# Set IMU variable
-		imuMsg = Imu()
-
-		# change from degrees to radians
-		roll *= math.pi / 180.0
-		pitch *= math.pi / 180.0
-		yaw *= math.pi / 180.0
-
-		q = quaternion_from_euler(roll,pitch,yaw)
-		imuMsg.orientation.x = q[0]
-		imuMsg.orientation.y = q[1]
-		imuMsg.orientation.z = q[2]
-		imuMsg.orientation.w = q[3]
-
-		imuMsg.orientation_covariance = [
-		0.0025 , 0 , 0,
-		0, 0.0025, 0,
-		0, 0, 0.0025
-		]
-
-		imuMsg.angular_velocity.x=gx
-		imuMsg.angular_velocity.y=gy
-		imuMsg.angular_velocity.z=gz
-
-		imuMsg.angular_velocity_covariance = [
-		0.02, 0 , 0,
-		0 , 0.02, 0,
-		0 , 0 , 0.02
-		]
-
-		imuMsg.linear_acceleration.x=ax
-		imuMsg.linear_acceleration.y=ay
-		imuMsg.linear_acceleration.z=az
-
-		imuMsg.linear_acceleration_covariance = [
-		0.04 , 0 , 0,
-		0 , 0.04, 0,
-		0 , 0 , 0.04
-		]
-
-		imuMsg.header.stamp= rospy.Time.now()
-		imuMsg.header.frame_id = 'base_imu_link'
-		imuMsg.header.seq = seq
-		seq = seq + 1
-
-		# Set Temperature variables
-		tempMsg = Temperature()
-		tempMsg.header.stamp = rospy.Time.now()
-		tempMsg.temperature = temperature
-		tempMsg.variance = 0
+		#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
 		
-		# Set Pressure variables
-		pressMsg = FluidPressure()
-		pressMsg.header.stamp = rospy.Time.now()
-		pressMsg.fluid_pressure = pressure
-		pressMsg.variance = 0
+
+	if em7180.gotAccelerometer():
+
+		ax,ay,az = em7180.readAccelerometer()
 		
-		# Set Altitude variables
-		altMsg = altitude
+		#print('Accel: %+3.3f %+3.3f %+3.3f' % (ax,ay,az))
 
-		# Magnetic field vector
-		magneticVector = MagneticField()
-		magneticVector.header.stamp=rospy.Time.now()
-		magneticVector.header.frame_id="magnetometer_link"
-		magneticVector.magnetic_field.x=mx
-		magneticVector.magnetic_field.y=my
-		magneticVector.magnetic_field.z=mz
-		magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4] 
+	if em7180.gotGyrometer():
+
+		gx,gy,gz = em7180.readGyrometer()
+
+		#print('Gyro: %+3.3f %+3.3f %+3.3f' % (gx,gy,gz))
+
+		#  Or define output variable according to the Android system, where
+		#  heading (0 to 360) is defined by the angle between the y-axis and True
+		#  North, pitch is rotation about the x-axis (-180 to +180), and roll is
+		#  rotation about the y-axis (-90 to +90) In this systen, the z-axis is
+		#  pointing away from Earth, the +y-axis is at the 'top' of the device
+		#  (cellphone) and the +x-axis points toward the right of the device.
+
+	if em7180.gotBarometer():
+
+		pressure, temperature = em7180.readBarometer()
+
+		altitude = (1.0 - math.pow(pressure / 1013.25, 0.190295)) * 44330
+		#print('  Altitude = %2.2f m\n' % altitude) 
+
+	if em7180.gotMagnetometer():
+
+		mx,my,mz = em7180.readMagnetometer()	
 
 
-		# Publish Data	
-		imu_pub.publish(imuMsg)
-		temp_pub.publish(tempMsg)
-		pressure_pub.publish(pressMsg)
-		alt_pub.publish(altMsg)
-		mag_pub.publish(magneticVector)
+	# Set IMU variable
+	imuMsg = Imu()
 
-		# Info to ros_console and screen
-		#rospy.loginfo("Publishing sensor data from IMU")
+	# change from degrees to radians
+	roll *= math.pi / 180.0
+	pitch *= math.pi / 180.0
+	yaw *= math.pi / 180.0
 
-		rate.sleep()
+	q = quaternion_from_euler(roll,pitch,yaw)
+	imuMsg.orientation.x = q[0]
+	imuMsg.orientation.y = q[1]
+	imuMsg.orientation.z = q[2]
+	imuMsg.orientation.w = q[3]
+
+	imuMsg.orientation_covariance = [
+	0.0025 , 0 , 0,
+	0, 0.0025, 0,
+	0, 0, 0.0025
+	]
+
+	imuMsg.angular_velocity.x=gx
+	imuMsg.angular_velocity.y=gy
+	imuMsg.angular_velocity.z=gz
+
+	imuMsg.angular_velocity_covariance = [
+	0.02, 0 , 0,
+	0 , 0.02, 0,
+	0 , 0 , 0.02
+	]
+
+	imuMsg.linear_acceleration.x=ax
+	imuMsg.linear_acceleration.y=ay
+	imuMsg.linear_acceleration.z=az
+
+	imuMsg.linear_acceleration_covariance = [
+	0.04 , 0 , 0,
+	0 , 0.04, 0,
+	0 , 0 , 0.04
+	]
+
+	imuMsg.header.stamp= rospy.Time.now()
+	imuMsg.header.frame_id = 'base_imu_link'
+	imuMsg.header.seq = seq
+	seq = seq + 1
+
+	# Set Temperature variables
+	tempMsg = Temperature()
+	tempMsg.header.stamp = rospy.Time.now()
+	tempMsg.temperature = temperature
+	tempMsg.variance = 0
 	
+	# Set Pressure variables
+	pressMsg = FluidPressure()
+	pressMsg.header.stamp = rospy.Time.now()
+	pressMsg.fluid_pressure = pressure
+	pressMsg.variance = 0
+	
+	# Set Altitude variables
+	altMsg = altitude
+
+	# Magnetic field vector
+	magneticVector = MagneticField()
+	magneticVector.header.stamp=rospy.Time.now()
+	magneticVector.header.frame_id="magnetometer_link"
+	magneticVector.magnetic_field.x=mx
+	magneticVector.magnetic_field.y=my
+	magneticVector.magnetic_field.z=mz
+	magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4] 
+
+
+	# Publish Data	
+	imu_pub.publish(imuMsg)
+	temp_pub.publish(tempMsg)
+	pressure_pub.publish(pressMsg)
+	alt_pub.publish(altMsg)
+	mag_pub.publish(magneticVector)
+
+	# Info to ros_console and screen
+	#rospy.loginfo("Publishing sensor data from IMU")
+
+	rate.sleep()
+
 
 

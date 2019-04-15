@@ -111,13 +111,16 @@ def alt_callback(data):
 	galtitude.set('%2.2f m' % data.data)
 
 def redraw_viz():
+	"""  Redrawing at 50 hz causes the data to freeze.
+		 IMU box is refreshing at 10 hz now
+	"""
 	global g_last_draw
 	if (rospy.Time.now().to_sec() > (refresh_rate + g_last_draw)):
 		g_last_draw = rospy.Time.now().to_sec()
 		# redraw imu box
 		doDraw() 
 
-def imu():
+def visualizer():
 
 	rospy.init_node('imu_viz', anonymous=True)
 
@@ -215,12 +218,28 @@ label_altT.grid(row=10, sticky=E)
 label_altT.config(font=("Courier", 22))
 
 label_alt = Label(root,  textvariable=galtitude)
-label_alt.grid(row=10, column=1)
+label_alt.grid(row=10, sticky=E)
 label_alt.config(font=("Courier", 22))
+
+# TODO: Spacing for box labels
+# or put a tractor so you can see
+# the way the imu is oriented
+
+#label_box0 = Label(root, text="Front: RED", foreground = "red")
+#label_box0.grid(row=11, columnspan=3)
+#label_box0.config(font=("Courier", 18))
+
+#label_box1 = Label(root, text="Right: BLUE", foreground = "blue")
+#label_box1.grid(row=11, columnspan=3)
+#label_box1.config(font=("Courier", 18))
+
+#label_box2 = Label(root, text="Up: GREEN", foreground = "green")
+#label_box2.grid(row=11, columnspan=3)
+#label_box2.config(font=("Courier", 18))
 
 #Define Canvas for displaying 3D cube to visualize positioning in 3D space
 cubeCanvas = Canvas(root, width=300, height=300)
-cubeCanvas.grid(row=11, columnspan=2)
+cubeCanvas.grid(row=12, columnspan=2)
 
 	# TODO: Change box to tractor
 	# load the .gif image file
@@ -318,7 +337,7 @@ def doDraw():
 
 
 if __name__ == '__main__':
-    imu()
+    visualizer()
 
 root.mainloop()
 
