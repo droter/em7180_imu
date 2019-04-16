@@ -22,6 +22,7 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
         GND _____________ 9 GND
         INT _____________ ???
 
+<img src="rpi_pinout.png" width=700>
 
 ### Installation
 
@@ -48,6 +49,7 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
         roslaunch em7180_imu imu_viz.launch
     
+<img src="USFSIMU.png" width=700>
 
 ### Documentation
 
