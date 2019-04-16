@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <launch>
 	<node pkg="em7180_imu" type="imu_viz_node.py" name="imu_viz" output='screen' />
 </launch>
