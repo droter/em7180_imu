@@ -58,9 +58,9 @@ rospy.init_node('EM7180_imu_driver', anonymous=False)
 
 # Publisher
 mag_pub=rospy.Publisher('imu/mag',MagneticField,queue_size=10)
-temp_pub=rospy.Publisher('sensors/temp', Temperature ,queue_size=10)
-pressure_pub=rospy.Publisher('sensors/pressure', FluidPressure ,queue_size=10)
-alt_pub=rospy.Publisher('sensors/alt', Float64 ,queue_size=10)
+temp_pub=rospy.Publisher('sensor/temp', Temperature ,queue_size=10)
+pressure_pub=rospy.Publisher('sensor/pressure', FluidPressure ,queue_size=10)
+alt_pub=rospy.Publisher('sensor/alt', Float64 ,queue_size=10)
 imu_pub=rospy.Publisher('imu/data', Imu , queue_size=10)
 imu_raw_pub=rospy.Publisher('imu/data_raw', Imu , queue_size=10)
 
