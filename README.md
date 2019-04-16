@@ -12,8 +12,6 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
     Connect the em7180 to your Raspberry Pi
 
-    For the RPi SDA and SCL should have external pull-up 4.7kohm resistors (to 3.3V). 
-
         Hardware setup:
         EM7180 __________ RPi 3
         3V3 _____________ 1 (3.3V)
