@@ -75,13 +75,25 @@ while not rospy.is_shutdown():
 
 		qw, qx, qy, qz = em7180.readQuaternion()
 
+
+		# IMU data http://www.ros.org/reps/rep-0145.html
+		# Coordinate Conventions http://www.ros.org/reps/rep-0103.html
+		# This data is prepared to be fused with Robot_Localization
+		# Yaw is positive when rotated counter clockwise.
+		# Pitch is positive when nose is down.
+		# Roll is positive when left side is up.
+		# Yaw is zero when pointing East
+		
 		roll  = math.atan2(2.0 * (qw * qx + qy * qz), qw * qw - qx * qx - qy * qy + qz * qz)
-		pitch = -math.asin(2.0 * (qx * qz - qw * qy))
-		yaw   = math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
+		pitch = math.asin(2.0 * (qx * qz - qw * qy))
+		yaw   = -math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)   
 
 		# change from radian to degrees
 		pitch *= 180.0 / math.pi
 		yaw   *= 180.0 / math.pi
+
+		# change yaw so East is zero
+		yaw +=90
 
 		# get declination and yaw calibration offset in degrees
 		# These are set in paramater server

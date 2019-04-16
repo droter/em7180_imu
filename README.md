@@ -64,6 +64,13 @@ Published Topics:
     The ROS standard for IMU data http://www.ros.org/reps/rep-0145.html
     The ROS standard for Coordinate Conventions http://www.ros.org/reps/rep-0103.html
 
+    	This data is prepared to be fused with Robot_Localization
+            Yaw is positive when rotated counter clockwise.
+            Pitch is positive when nose is down.
+            Roll is positive when left side is up.
+            
+            Yaw is zero when pointing East
+
 ### Mounting the imu on your robot
 
 
