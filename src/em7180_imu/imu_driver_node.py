@@ -186,40 +186,39 @@ while not rospy.is_shutdown():
 	# IMU raw no orintation
 	imuRawMsg = Imu()
 
-	q = quaternion_from_euler(roll,pitch,yaw)
-	imuMsg.orientation.x = 0
-	imuMsg.orientation.y = 0
-	imuMsg.orientation.z = 0
-	imuMsg.orientation.w = 0
+	imuRawMsg.orientation.x = 0
+	imuRawMsg.orientation.y = 0
+	imuRawMsg.orientation.z = 0
+	imuRawMsg.orientation.w = 0
 
-	imuMsg.orientation_covariance = [
+	imuRawMsg.orientation_covariance = [
 	0, 0, 0,
 	0, 0, 0,
 	0, 0, 0
 	]
 
-	imuMsg.angular_velocity.x=gx
-	imuMsg.angular_velocity.y=gy
-	imuMsg.angular_velocity.z=gz
+	imuRawMsg.angular_velocity.x=gx
+	imuRawMsg.angular_velocity.y=gy
+	imuRawMsg.angular_velocity.z=gz
 
-	imuMsg.angular_velocity_covariance = [
+	imuRawMsg.angular_velocity_covariance = [
 	0.02, 0 , 0,
 	0 , 0.02, 0,
 	0 , 0 , 0.02
 	]
 
-	imuMsg.linear_acceleration.x=ax
-	imuMsg.linear_acceleration.y=ay
-	imuMsg.linear_acceleration.z=az
+	imuRawMsg.linear_acceleration.x=ax
+	imuRawMsg.linear_acceleration.y=ay
+	imuRawMsg.linear_acceleration.z=az
 
-	imuMsg.linear_acceleration_covariance = [
+	imuRawMsg.linear_acceleration_covariance = [
 	0.04 , 0 , 0,
 	0 , 0.04, 0,
 	0 , 0 , 0.04
 	]
 
-	imuMsg.header.stamp= rospy.Time.now()
-	imuMsg.header.frame_id = 'imu_link'
+	imuRawMsg.header.stamp= rospy.Time.now()
+	imuRawMsg.header.frame_id = 'imu_link'
 
 	# Set Temperature variables
 	tempMsg = Temperature()

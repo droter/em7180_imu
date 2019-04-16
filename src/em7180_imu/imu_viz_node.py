@@ -124,10 +124,10 @@ def visualizer():
 
 	rospy.init_node('imu_viz', anonymous=True)
 
-	rospy.Subscriber('imu', Imu, imu_callback)
-	rospy.Subscriber('sensors/temp', Temperature, temp_callback)
-	rospy.Subscriber('sensors/pressure', FluidPressure, press_callback)
-	rospy.Subscriber('sensors/alt', Float64, alt_callback)
+	rospy.Subscriber('imu/data', Imu, imu_callback)
+	rospy.Subscriber('sensor/temp', Temperature, temp_callback)
+	rospy.Subscriber('sensor/pressure', FluidPressure, press_callback)
+	rospy.Subscriber('sensor/alt', Float64, alt_callback)
 
 
 # GUI stuff
