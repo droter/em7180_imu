@@ -231,7 +231,7 @@ while not rospy.is_shutdown():
 	# Set Pressure variables
 	pressMsg = FluidPressure()
 	pressMsg.header.stamp = rospy.Time.now()
-	magneticVector.header.frame_id="imu_link"
+	pressMsg.header.frame_id="imu_link"
 	pressMsg.fluid_pressure = pressure
 	pressMsg.variance = 0
 	
