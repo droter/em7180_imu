@@ -42,11 +42,11 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
     To run the driver:
 
-        rosrun em7180_imu imu_driver_node.py
+        roslaunch em7180_imu imu_driver.launch
         
     To run the visualization:
 
-        rosrun em7180_imu imu_viz_node.py
+        roslaunch em7180_imu imu_viz.launch
     
 
 ### Documentation
