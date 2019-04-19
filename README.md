@@ -28,27 +28,27 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
 ### Installation
 
+    Download an RPi image with ROS and Kinetic.
+        Ubiquity Robotics: https://downloads.ubiquityrobotics.com/
+
     cd ~/catkin_ws/src
-    git clone -b master https://github.com/droter/em7180_imu/
+    git clone https://github.com/droter/em7180_imu/
     cd ~/catkin_ws
-    catkin build
+    catkin_make
 
 ### Usage
 
     Python SMbus is required.  If your system doesn't have it installed:
-
         pip install smbus
 
     Add the user to the I2C usergroup.
-
         adduser $USER i2c
 
-    To run the driver:
 
+    To run the driver:
         roslaunch em7180_imu imu_driver.launch
         
     To run the visualization:
-
         roslaunch em7180_imu imu_viz.launch
     
 <img src="USFSIMU.png" width=700>
@@ -67,21 +67,22 @@ Published Topics:
     sensor/alt  (sensor_msgs/Float64)
 
 ### Angles
-    ROS standard for Coordinate Conventions http://www.ros.org/reps/rep-0103.html
 
-    	This data is prepared to be fused with Robot_Localization
-            Yaw is positive when rotated counter clockwise.
-            Pitch is positive when nose is down.
-            Roll is positive when left side is up.
-            
-            Yaw is zero when pointing East
+ROS standard for Coordinate Conventions http://www.ros.org/reps/rep-0103.html
 
-            Accelleration when electronic components are up is z = 1.
-            Accelleration when nose is down 90 degrees is x = 1.
-            Accelleration when left side is up 90 degrees is y = 1.
+    The imu/data is prepared to be fused with Robot_Localization
+        Yaw is positive when rotated counter clockwise.
+        Pitch is positive when nose is down.
+        Roll is positive when left side is up.
+        
+        Yaw is zero when pointing East
+
 
 ### Mounting the imu on your robot
 
+    Accelleration when electronic components are up is z = 1.
+    Accelleration when nose is down 90 degrees is x = 1.
+    Accelleration when left side is up 90 degrees is y = 1.
 
 
 ### Credits
