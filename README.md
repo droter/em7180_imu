@@ -1,16 +1,20 @@
 # em7180
 
-A simple python package to use em7180 IMU in ROS. Tested on Raspberry Pi 3B with ROS Kinetic.
+A ROS IMU driver package for the Ultimate Sensor Fusion Solution (USFS) - LSM6DSM + LIS2MD and MPU9250.  Will work with other EM7180 Sensor Hub IMU's.  Tested on Raspberry Pi 3B with ROS Kinetic.
 
 https://www.tindie.com/products/onehorse/ultimate-sensor-fusion-solution-lsm6dsm-lis2md/
 
+
 ### Calibration
+
+You will need a Teensy 3.x or Arduino Mini Pro to calibrate your IMU.  The IMU will work as shipped, it will just take more measurements for the IMU sensor fusion algorithm to lock onto correct values.  By going through the calibration process the IMU will be able to 'warm start' and lock onto the correct values quicker.
 
 https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
+
 ### Wiring
 
-    Connect the em7180 to your Raspberry Pi
+    Connect the USFS - em7180 to your Raspberry Pi
 
         Hardware setup:
         EM7180 __________ RPi 3
@@ -31,11 +35,11 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
 ### Usage
 
-    Python SMbus requires root access. It may therefore be required to run it as root:
+    Python SMbus is required.  If your system doesn't have it installed:
 
-        sudo su
+        pip install smbus
 
-    You could however consider adding the user to the I2C usergroup to avoid running the package as root.
+    Add the user to the I2C usergroup.
 
         adduser $USER i2c
 
@@ -51,6 +55,8 @@ https://github.com/gregtomasch/EM7180_SENtral_Calibration
 
 ### Documentation
 
+ROS standard for IMU data http://www.ros.org/reps/rep-0145.html
+
 Published Topics:
 
     imu/data  (sensor_msgs/Imu)
@@ -61,8 +67,7 @@ Published Topics:
     sensor/alt  (sensor_msgs/Float64)
 
 ### Angles
-    The ROS standard for IMU data http://www.ros.org/reps/rep-0145.html
-    The ROS standard for Coordinate Conventions http://www.ros.org/reps/rep-0103.html
+    ROS standard for Coordinate Conventions http://www.ros.org/reps/rep-0103.html
 
     	This data is prepared to be fused with Robot_Localization
             Yaw is positive when rotated counter clockwise.
@@ -70,6 +75,10 @@ Published Topics:
             Roll is positive when left side is up.
             
             Yaw is zero when pointing East
+
+            Accelleration when electronic components are up is z = 1.
+            Accelleration when nose is down 90 degrees is x = 1.
+            Accelleration when left side is up 90 degrees is y = 1.
 
 ### Mounting the imu on your robot
 

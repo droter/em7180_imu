@@ -25,7 +25,7 @@ from em7180.em7180_utils import EM7180_Master
 import rospy
 import math
 import time
-from tf.transformations import quaternion_from_euler
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from sensor_msgs.msg import MagneticField, Imu, Temperature, FluidPressure
 from std_msgs.msg import Float64
 
@@ -92,7 +92,7 @@ while not rospy.is_shutdown():
 		pitch *= 180.0 / math.pi
 		yaw   *= 180.0 / math.pi
 
-		# change yaw so East is zero
+		# change yaw so East is zero degrees
 		yaw +=90
 
 		# get declination and yaw calibration offset in degrees
