@@ -52,7 +52,6 @@ if em7180.gotError():
 	exit(1)
 
 
-
 # Initialize node
 rospy.init_node('EM7180_imu_driver', anonymous=False)
 
@@ -67,6 +66,7 @@ imu_raw_pub=rospy.Publisher('imu/data_raw', Imu , queue_size=10)
 imu_yaw_calibration = rospy.get_param('~imu_yaw_calibration', 0.0)
 declination = rospy.get_param('~declination', 0.0)
 
+
 while not rospy.is_shutdown():
 
 	rate=rospy.Rate(50)
@@ -74,7 +74,6 @@ while not rospy.is_shutdown():
 	if (em7180.gotQuaternion()):
 
 		qw, qx, qy, qz = em7180.readQuaternion()
-
 
 		# IMU data http://www.ros.org/reps/rep-0145.html
 		# Coordinate Conventions http://www.ros.org/reps/rep-0103.html
@@ -104,13 +103,78 @@ while not rospy.is_shutdown():
 		roll  *= 180.0 / math.pi
 
 		#print('Quaternion Roll, Pitch, Yaw: %+2.2f %+2.2f %+2.2f' % (roll, pitch, yaw))
-		
+
+		# change from degrees to radians
+		roll *= math.pi / 180.0
+		pitch *= math.pi / 180.0
+		yaw *= math.pi / 180.0
+
+		q = quaternion_from_euler(roll,pitch,yaw)
+		imuMsg.orientation.x = q[0]
+		imuMsg.orientation.y = q[1]
+		imuMsg.orientation.z = q[2]
+		imuMsg.orientation.w = q[3]
+
+		# Set IMU variable
+		imuMsg = Imu()
+
+		imuMsg.orientation_covariance = [
+		0.0025 , 0 , 0,
+		0, 0.0025, 0,
+		0, 0, 0.0025
+		]
+
+		imuMsg.header.stamp= rospy.Time.now()
+		imuMsg.header.frame_id = 'imu_link'
+		imuMsg.header.seq = seq
+		seq = seq + 1
+
+		# IMU raw no orintation
+		imuRawMsg = Imu()
+
+		imuRawMsg.orientation.x = 0
+		imuRawMsg.orientation.y = 0
+		imuRawMsg.orientation.z = 0
+		imuRawMsg.orientation.w = 0
+
+		imuRawMsg.orientation_covariance = [
+		0, 0, 0,
+		0, 0, 0,
+		0, 0, 0
+		]
+
+		imuRawMsg.header.stamp= rospy.Time.now()
+		imuRawMsg.header.frame_id = 'imu_link'
+
 
 	if em7180.gotAccelerometer():
 
 		ax,ay,az = em7180.readAccelerometer()
 		
 		#print('Accel: %+3.3f %+3.3f %+3.3f' % (ax,ay,az))
+
+		# IMU data
+		imuMsg.linear_acceleration.x=ax
+		imuMsg.linear_acceleration.y=ay
+		imuMsg.linear_acceleration.z=az
+
+		imuMsg.linear_acceleration_covariance = [
+		0.04 , 0 , 0,
+		0 , 0.04, 0,
+		0 , 0 , 0.04
+		]
+
+		# IMU raw data
+		imuRawMsg.linear_acceleration.x=ax
+		imuRawMsg.linear_acceleration.y=ay
+		imuRawMsg.linear_acceleration.z=az
+
+		imuRawMsg.linear_acceleration_covariance = [
+		0.04 , 0 , 0,
+		0 , 0.04, 0,
+		0 , 0 , 0.04
+		]
+
 
 	if em7180.gotGyrometer():
 
@@ -125,126 +189,66 @@ while not rospy.is_shutdown():
 		#  pointing away from Earth, the +y-axis is at the 'top' of the device
 		#  (cellphone) and the +x-axis points toward the right of the device.
 
+		# IMU data
+		imuMsg.angular_velocity.x=gx
+		imuMsg.angular_velocity.y=gy
+		imuMsg.angular_velocity.z=gz
+
+		imuMsg.angular_velocity_covariance = [
+		0.02, 0 , 0,
+		0 , 0.02, 0,
+		0 , 0 , 0.02
+		]
+
+		# IMU raw data 
+		imuRawMsg.angular_velocity.x=gx
+		imuRawMsg.angular_velocity.y=gy
+		imuRawMsg.angular_velocity.z=gz
+
+		imuRawMsg.angular_velocity_covariance = [
+		0.02, 0 , 0,
+		0 , 0.02, 0,
+		0 , 0 , 0.02
+		]
+
+
 	if em7180.gotBarometer():
 
 		pressure, temperature = em7180.readBarometer()
 
 		altitude = (1.0 - math.pow(pressure / 1013.25, 0.190295)) * 44330
 		#print('  Altitude = %2.2f m\n' % altitude) 
+	
+		# Set Pressure variables
+		pressMsg = FluidPressure()
+		pressMsg.header.stamp = rospy.Time.now()
+		pressMsg.header.frame_id="imu_link"
+		pressMsg.fluid_pressure = pressure
+		pressMsg.variance = 0
+
+		# Set Temperature variables
+		tempMsg = Temperature()
+		tempMsg.header.stamp = rospy.Time.now()
+		tempMsg.header.frame_id="imu_link"
+		tempMsg.temperature = temperature
+		tempMsg.variance = 0
+
+		# Set Altitude variables
+		altMsg = altitude
+
 
 	if em7180.gotMagnetometer():
 
 		mx,my,mz = em7180.readMagnetometer()	
 
-
-	# Set IMU variable
-	imuMsg = Imu()
-
-	# change from degrees to radians
-	roll *= math.pi / 180.0
-	pitch *= math.pi / 180.0
-	yaw *= math.pi / 180.0
-
-	q = quaternion_from_euler(roll,pitch,yaw)
-	imuMsg.orientation.x = q[0]
-	imuMsg.orientation.y = q[1]
-	imuMsg.orientation.z = q[2]
-	imuMsg.orientation.w = q[3]
-
-	imuMsg.orientation_covariance = [
-	0.0025 , 0 , 0,
-	0, 0.0025, 0,
-	0, 0, 0.0025
-	]
-
-	imuMsg.angular_velocity.x=gx
-	imuMsg.angular_velocity.y=gy
-	imuMsg.angular_velocity.z=gz
-
-	imuMsg.angular_velocity_covariance = [
-	0.02, 0 , 0,
-	0 , 0.02, 0,
-	0 , 0 , 0.02
-	]
-
-	imuMsg.linear_acceleration.x=ax
-	imuMsg.linear_acceleration.y=ay
-	imuMsg.linear_acceleration.z=az
-
-	imuMsg.linear_acceleration_covariance = [
-	0.04 , 0 , 0,
-	0 , 0.04, 0,
-	0 , 0 , 0.04
-	]
-
-	imuMsg.header.stamp= rospy.Time.now()
-	imuMsg.header.frame_id = 'imu_link'
-	imuMsg.header.seq = seq
-	seq = seq + 1
-
-
-	# IMU raw no orintation
-	imuRawMsg = Imu()
-
-	imuRawMsg.orientation.x = 0
-	imuRawMsg.orientation.y = 0
-	imuRawMsg.orientation.z = 0
-	imuRawMsg.orientation.w = 0
-
-	imuRawMsg.orientation_covariance = [
-	0, 0, 0,
-	0, 0, 0,
-	0, 0, 0
-	]
-
-	imuRawMsg.angular_velocity.x=gx
-	imuRawMsg.angular_velocity.y=gy
-	imuRawMsg.angular_velocity.z=gz
-
-	imuRawMsg.angular_velocity_covariance = [
-	0.02, 0 , 0,
-	0 , 0.02, 0,
-	0 , 0 , 0.02
-	]
-
-	imuRawMsg.linear_acceleration.x=ax
-	imuRawMsg.linear_acceleration.y=ay
-	imuRawMsg.linear_acceleration.z=az
-
-	imuRawMsg.linear_acceleration_covariance = [
-	0.04 , 0 , 0,
-	0 , 0.04, 0,
-	0 , 0 , 0.04
-	]
-
-	imuRawMsg.header.stamp= rospy.Time.now()
-	imuRawMsg.header.frame_id = 'imu_link'
-
-	# Set Temperature variables
-	tempMsg = Temperature()
-	tempMsg.header.stamp = rospy.Time.now()
-	tempMsg.header.frame_id="imu_link"
-	tempMsg.temperature = temperature
-	tempMsg.variance = 0
-	
-	# Set Pressure variables
-	pressMsg = FluidPressure()
-	pressMsg.header.stamp = rospy.Time.now()
-	pressMsg.header.frame_id="imu_link"
-	pressMsg.fluid_pressure = pressure
-	pressMsg.variance = 0
-	
-	# Set Altitude variables
-	altMsg = altitude
-
-	# Magnetic field vector
-	magneticVector = MagneticField()
-	magneticVector.header.stamp=rospy.Time.now()
-	magneticVector.header.frame_id="imu_link"
-	magneticVector.magnetic_field.x=mx
-	magneticVector.magnetic_field.y=my
-	magneticVector.magnetic_field.z=mz
-	magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4] 
+		# Magnetic field vector
+		magneticVector = MagneticField()
+		magneticVector.header.stamp=rospy.Time.now()
+		magneticVector.header.frame_id="imu_link"
+		magneticVector.magnetic_field.x=mx
+		magneticVector.magnetic_field.y=my
+		magneticVector.magnetic_field.z=mz
+		magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4] 
 
 
 	# Publish Data	
