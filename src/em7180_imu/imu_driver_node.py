@@ -38,6 +38,7 @@ Q_RATE_DIVISOR = 3    # 1/3 gyro rate
 
 seq = 0
 
+# Initilize IMU
 em7180 = EM7180_Master(MAG_RATE, ACCEL_RATE, GYRO_RATE, BARO_RATE, Q_RATE_DIVISOR)
 
 # Start the EM7180 in master mode
@@ -110,13 +111,14 @@ while not rospy.is_shutdown():
 		yaw *= math.pi / 180.0
 
 		q = quaternion_from_euler(roll,pitch,yaw)
+
+		# Set IMU variable
+		imuMsg = Imu()
+
 		imuMsg.orientation.x = q[0]
 		imuMsg.orientation.y = q[1]
 		imuMsg.orientation.z = q[2]
 		imuMsg.orientation.w = q[3]
-
-		# Set IMU variable
-		imuMsg = Imu()
 
 		imuMsg.orientation_covariance = [
 		0.0025 , 0 , 0,
