@@ -213,6 +213,10 @@ while not rospy.is_shutdown():
 		0 , 0 , 0.02
 		]
 
+		# publish message
+		imu_pub.publish(imuMsg)
+		imu_raw_pub.publish(imuRawMsg)
+
 
 	if em7180.gotBarometer():
 
@@ -238,6 +242,11 @@ while not rospy.is_shutdown():
 		# Set Altitude variables
 		altMsg = altitude
 
+		# publish message
+		temp_pub.publish(tempMsg)
+		pressure_pub.publish(pressMsg)
+		alt_pub.publish(altMsg)
+
 
 	if em7180.gotMagnetometer():
 
@@ -250,16 +259,11 @@ while not rospy.is_shutdown():
 		magneticVector.magnetic_field.x=mx
 		magneticVector.magnetic_field.y=my
 		magneticVector.magnetic_field.z=mz
-		magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4] 
+		magneticVector.magnetic_field_covariance=[2,0,0,0,2,0,0,0,4]
 
+		# publish message
+		mag_pub.publish(magneticVector)
 
-	# Publish Data	
-	imu_pub.publish(imuMsg)
-	imu_raw_pub.publish(imuRawMsg)
-	temp_pub.publish(tempMsg)
-	pressure_pub.publish(pressMsg)
-	alt_pub.publish(altMsg)
-	mag_pub.publish(magneticVector)
 
 	# Info to ros_console and screen
 	#rospy.loginfo("Publishing sensor data from IMU")
